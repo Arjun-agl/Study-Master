@@ -1,0 +1,18 @@
+# Core dependencies
+streamlit>=1.22.0
+PyPDF2>=3.0.0
+faiss-cpu>=1.7.4
+numpy>=1.22.0
+Pillow>=9.0.0
+
+# LLM and embeddings
+langchain>=0.0.267
+langchain-ollama>=0.0.1
+
+# Additional utilities
+pydantic>=1.10.8
+python-dotenv>=1.0.0
+
+# Optional: for improved performance
+protobuf>=3.20.0
+watchdog>=2.3.0

@@ -1,125 +1,96 @@
-# 📚 AI Scholar — Intelligent PDF Q&A System
+# 📚 Study Master (AI Scholar)
 
-AI Scholar is a modern, AI-powered web application built with **Streamlit** that enables users to interact with documents and large language models in an intuitive way. It allows users to upload PDFs, process them, and ask context-aware questions, or chat freely with a base AI model.
+An **offline AI study assistant** that answers questions from your own PDFs. Upload a document,
+ask a question, and a local language model answers **from the document**, not from what it memorised.
+Everything runs on your own laptop through [Ollama](https://ollama.com): no internet, no account, no cost.
 
----
+*Team project, March 2026.*
 
-## 🚀 Features
+![Asking a question about a PDF](Screenshots/05-pdf-answer.png)
 
-### 🧠 Base Model Chat
+## The key test
 
-* Chat directly with a local LLM (via Ollama)
-* Continuous conversation with memory
-* Fast and lightweight interaction
+To check the app really reads the PDF, we tested it on **documents we invented**, including a guide
+to a made-up programming language called *Zephyron* (see `Content/`).
 
-### 📚 Trained Model (PDF Q&A)
+| Without the PDF (Base Model) | With the PDF (Trained Model) |
+|---|---|
+| ![Base model](Screenshots/02-base-model-no-pdf.png) | ![PDF answer](Screenshots/05-pdf-answer.png) |
+| The model has never heard of Zephyron. | It explains Zephyron correctly, from the document. |
 
-* Upload and process PDF documents
-* Automatic text extraction and chunking
-* Semantic search using embeddings + FAISS
-* Context-aware Q&A based on document content
-* Built-in PDF preview alongside chat
+## How it works (RAG: retrieval-augmented generation)
 
-### 💬 Smart Chat Interface
+1. **Upload:** the PDF is shown in a preview next to the chat.
+2. **Split:** the text is extracted with PyPDF2 and cut into ~300-word chunks.
+3. **Embed:** each chunk becomes a vector with `nomic-embed-text` and is stored in a **FAISS** index.
+4. **Retrieve:** the question is embedded too, and the 3 closest chunks are found.
+5. **Answer:** only those chunks are sent to a local LLM, which writes the answer.
 
-* Clean, modern UI with chat bubbles
-* Separate chat histories for base and trained modes
-* Real-time responses with loading indicators
+The app has two tabs:
 
-### ⚡ Performance Optimizations
+- **🧠 Base Model:** plain chat with the local LLM.
+- **📚 Trained Model:** chat grounded in your uploaded PDF.
 
-* Text chunking for efficient retrieval
-* FAISS vector indexing for fast similarity search
-* Embedding caching safeguards
-* PDF size limiting to prevent crashes
+## Tech stack
 
----
+| Part | Tool |
+|---|---|
+| UI | Streamlit + custom CSS |
+| LLM | Ollama (Mistral by default, phi3:mini for low-RAM laptops) |
+| Embeddings | Ollama `nomic-embed-text` |
+| Vector search | FAISS |
+| PDF text | PyPDF2 |
+| Language | Python |
 
-## 🛠️ Tech Stack
+## Run it
 
-* **Frontend/UI:** Streamlit + Custom CSS
-* **LLM Backend:** Ollama (Mistral model)
-* **Embeddings:** Ollama (`nomic-embed-text`)
-* **Vector Database:** FAISS
-* **PDF Processing:** PyPDF2
-* **Language:** Python
+1. Install [Ollama](https://ollama.com) and pull the models:
 
----
+   ```
+   ollama pull nomic-embed-text
+   ollama pull mistral        # or: ollama pull phi3:mini  (needs ~2 GB free RAM)
+   ```
 
-## ▶️ Running the App
+2. Install the Python packages:
 
-```bash
-streamlit run app.py
-```
+   ```
+   pip install -r requirements.txt
+   pip install langchain-community
+   ```
 
-Open in browser:
+3. Start the app:
 
-```
-http://localhost:8506
-```
+   ```
+   streamlit run app.py
+   ```
 
----
+   To use a smaller model, set `OLLAMA_MODEL` first, for example in PowerShell:
 
-## 🧩 How It Works
+   ```
+   $env:OLLAMA_MODEL = "phi3:mini"; streamlit run app.py
+   ```
 
-### 📄 PDF Mode Workflow
+`new_app.py` is an alternative layout of the same app. `OLLAMA_NIOS_LLM.ipynb` is the notebook used
+while building and testing it.
 
-1. Upload a PDF
-2. Extract text using PyPDF2
-3. Split into chunks
-4. Generate embeddings using Ollama
-5. Store vectors in FAISS
-6. On query:
-
-   * Convert query → embedding
-   * Retrieve relevant chunks
-   * Send context + question to LLM
-   * Return intelligent answer
-
-### 🧠 Base Model Workflow
-
-* Direct prompt → Ollama LLM → Response
-
----
-
-## 📁 Project Structure
+## Project layout
 
 ```
-ai-scholar/
-│
-├── app.py                 # Main Streamlit app
-├── requirements.txt      # Dependencies
-├── README.md             # Project documentation
-└── assets/               # (Optional) images or styling
+app.py                  Main Streamlit app
+new_app.py              Alternative layout of the app
+OLLAMA_NIOS_LLM.ipynb   Development notebook
+requirements.txt        Python dependencies
+Content/                Invented test documents (Zephyron guide, fictional stories)
+Screenshots/            Screenshots of the app
 ```
 
----
+## Limitations
 
-## 🎯 Use Cases
+- Reads the first ~20,000 characters of one PDF at a time.
+- Scanned (image-only) PDFs aren't supported yet.
+- Chats aren't saved between sessions.
+- Answers take about 10–30 seconds on a normal laptop.
 
-* 📖 Study assistance from PDFs
-* 🧑‍🏫 Training material exploration
-* 🧠 Research paper summarization
-* ❓ Context-aware Q&A systems
-* 🏫 Educational tools
+## Ideas for later
 
----
-
-## ⚠️ Limitations
-
-* PDF text extraction may fail for scanned/image PDFs
-* Context limited to ~20,000 characters
-* Requires local Ollama server running
-* No persistent database (session-based)
-
----
-
-## 🔮 Future Improvements
-
-* Support for multiple PDFs
-* Persistent vector database (e.g., Chroma, Pinecone)
-* OCR support for scanned PDFs
-* Streaming responses
-* User authentication
-* Cloud deployment
-
+Multiple PDFs at once, a saved vector database, OCR for scanned pages, and streaming answers.

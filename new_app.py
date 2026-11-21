@@ -492,12 +492,12 @@ with left:
 
 
 with right:
-    if st.session_state.active_tab == "base":
+    if st.session_state.active_tab == "base" and os.path.exists("alpaca.png"):
         st.image("alpaca.png", width=320)
 
 # ⬅️ your columns block ends here
 
-if st.session_state.active_tab == "trained":
+if st.session_state.active_tab == "trained" and os.path.exists("alpaca.png"):
     st.markdown("""
         <style>
         .floating-img {
